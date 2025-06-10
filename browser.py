@@ -1,3 +1,4 @@
+import tkinter
 class URL:
     def __init__(self,url):
         if "://" in url:
@@ -67,25 +68,72 @@ class URL:
         s.close()
         return version,status,explanation,content
 
-    def display(self,content): # displays everything except the intags, ie, everything plaintext
-        in_tag=False
+# def lex(content): # displays everything except the intags, ie, everything plaintext
+#     text=''
+#     in_tag=False
+#     for char in content:
+#         if char=='<':
+#             in_tag=True
+#         elif char==">":
+#             in_tag=False
+#         elif not in_tag:
+#             text+=char
+#     return text
+
+# def load(self,url): # it loads the url, ie, gets the response and displays it
+#     version,status,explanation,content=url.request()
+#     print(version, status, explanation)
+#     self.display(content)
+
+WIDTH=1200
+HEIGHT=800
+SCROLL_STEP=100
+H_STEP=8
+V_STEP=18
+class Browser:
+    def __init__(self):
+        self.window=tkinter.Tk() # creating the window
+        self.canvas=tkinter.Canvas(self.window, width=WIDTH, height=HEIGHT) # creating a canvas to draw stuff
+        self.canvas.pack()
+        self.display_layout=[]
+        self.scroll=0
+        self.window.bind("<Down>", self.scrolldown)
+        self.window.bind("<Up>", self.scrollup)
+    def layout(self,content):
+        x=H_STEP
+        y=V_STEP
         for char in content:
-            # if char=='<':
-            #     in_tag=True
-            # elif char==">":
-            #     in_tag=False
-            # elif not in_tag:
-            #     print(char, end='')
-            print(char, end='')
-    
-    def load(self,url): # it loads the url, ie, gets the response and displays it
+            if x>WIDTH-H_STEP:
+                x=H_STEP
+                y+=V_STEP
+                self.display_layout.append((x,y,char))
+            else:
+                self.display_layout.append((x,y,char))
+                x+=H_STEP
+    def draw(self):
+        # logic for drawing the characters
+        self.canvas.delete("all")
+        for x,y,char in self.display_layout:
+            if y<self.scroll: continue
+            elif y>self.scroll+HEIGHT: continue
+            else: self.canvas.create_text(x,y-self.scroll,text=char)
+    def load(self,url):
         version,status,explanation,content=url.request()
-        print(version, status, explanation)
-        self.display(content)
+        self.layout(content)
+        self.draw()
+    def scrolldown(self,e):
+        self.scroll+=SCROLL_STEP
+        self.draw()
+    def scrollup(self,e):
+        self.scroll-=SCROLL_STEP
+        self.draw()
+
+    
 
 if __name__=='__main__':
     import sys
     url=URL(sys.argv[1])
-    url.load(url)
-
-        
+    # url.load(url)
+    browser=Browser()
+    browser.load(url)
+    tkinter.mainloop()
