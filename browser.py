@@ -5,7 +5,7 @@ class URL:
             assert self.scheme in ['http','https']
         if '/' not in url:
             url+='/'
-        self.hostname, url = url.split("/",1)
+        self.hostname, url = url.split("/",1) # setting the hostname
         self.path="/"+url
         if self.scheme=='https':
             self.port=443
@@ -39,7 +39,7 @@ class URL:
             s=ctx.wrap_socket(s, server_hostname=self.hostname)
         
         # now it's time to send the request
-        request=f'GET {self.path} HTTP/1.0\r\n' # \r\n is just HTTPs way of a new line
+        request=f'GET {self.path} HTTP/1.0\r\n' # \r\n is just HTTP's way of a new line
         request+=f'Host: {self.hostname}\r\n' # passing the headers
         request+="\r\n" # an empty line so that HTTP knows that our request has finished
         s.send(request.encode('utf8')) # and request sent
@@ -65,7 +65,7 @@ class URL:
 
         # now that we have the content, we'll return it and close the connection
         s.close()
-        return content
+        return version,status,explanation,content
 
     def display(self,content): # displays everything except the intags, ie, everything plaintext
         in_tag=False
@@ -79,7 +79,8 @@ class URL:
             print(char, end='')
     
     def load(self,url): # it loads the url, ie, gets the response and displays it
-        content=url.request()
+        version,status,explanation,content=url.request()
+        print(version, status, explanation)
         self.display(content)
 
 if __name__=='__main__':
